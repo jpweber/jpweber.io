@@ -1,0 +1,44 @@
+baseurl = "http://jpweber.io/"
+title = "Figuring it Out"
+theme = "tale"
+languageCode = "en-us"
+copyright = "Jim Weber"
+
+[Author]
+    name = "Jim Weber"
+    profile = "https://google.com/+XXX"
+
+[Taxonomies]
+    tag = "tags"
+
+[Params]
+    intro = true
+    # headline = "My headline"
+    description = "Sharing things I learn"
+    github = "https://github.com/jpweber"
+    twitter = "https://twitter.com/jpw"
+    opengraph = false
+    shareTwitter = false
+    shareLinkedIn = false
+    sharefacebook = false
+    sharegoogleplus = false
+    dateFormat = "Mon, Jan 2, 2006"
+    highlightJsUrl = ""
+    highlightJsLocalUrl = ""
+    exponeaJsUrl = ""
+    exponeaTarget = ""
+    exponeaToken = ""
+    exponeaTrackVisits = false
+
+[Permalinks]
+    post = "/:year/:month/:day/:filename/"
+
+[[menu.main]]
+    # name = "Blog"
+    url = "/"
+    weight = 1
+
+
+[[menu.main]]
+    url = "/page/about/"
+    weight = 4

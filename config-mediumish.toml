@@ -1,0 +1,47 @@
+baseURL = "https://example.com/"
+languageCode = "en-us"
+title = "jpweber blog"
+theme = "mediumish-gohugo-theme"
+summaryLength = 25
+copyright = "Jim Weber - All rights reserved"
+enableEmoji = true
+publishDir = "public"
+#disqusShortname = "your-shortname-here"
+#googleAnalytics = "UA-1XXXXXXX1-1"
+
+
+[params]
+  logo = "/images/logo.png"
+  description ="Figuring it Out"
+
+
+[params.author]
+  name = "Jim Weber"
+  thumbnail = "/images/icon-thumb.png"
+  description = "Creator of this blog."
+
+[params.index]
+  picture = "/images/icon-thumb.png"
+  title = "Jim Weber"
+  subtitle = "I'm a unique placeholder. Working here and there!"
+  mdtext = '''
+Currently trying to get this blog running, still don't know what the blog will be about!\
+**This textblock is a demonstration of the mdtext-param.**\
+### This is a markdown heading
+'''
+
+[params.social]
+  github = "jpweber"
+  twitter = "jpw"
+
+## Main Menu
+[[menu.main]]
+    name = "Blog"
+    weight = 100
+    identifier = "blog"
+    url = "/blog"
+[[menu.main]]
+    name = "About Me"
+    identifier = "about"
+    weight = 200
+    url = "/"

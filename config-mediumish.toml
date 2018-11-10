@@ -23,11 +23,10 @@ publishDir = "public"
 [params.index]
   picture = "/images/icon-thumb.png"
   title = "Jim Weber"
-  subtitle = "I'm a unique placeholder. Working here and there!"
+  subtitle = "Figuring things out and sharing knowledge!"
   mdtext = '''
-Currently trying to get this blog running, still don't know what the blog will be about!\
-**This textblock is a demonstration of the mdtext-param.**\
-### This is a markdown heading
+I do a lot of work with Kubernetes and Cloud native technologies. I hope something you find here helps you. 
+### Kubernauts Unite!
 '''
 
 [params.social]

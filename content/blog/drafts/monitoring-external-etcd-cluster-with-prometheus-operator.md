@@ -10,7 +10,7 @@ draft = true
 
 The recommended way to run etcd for kubernetes is to have your etcd cluster outside of the kubernetes cluster. You might be thinking create a service monitor to monitor an external service like you’ve done before. But, you’ve secured your etcd cluster so you need client certs to talk to it right? Now we need a way to provide certs to the service monitor.  Sure enough we can do all of that by creating certs as kubernetes secrets and adding a `tlsConfig` to our service monitor.
 
-For more some background details on monitoring external service with prometheus see my earlier [post](/blog/monitor-external-service-with-prometheus-operator/) about this. 
+For more some background details on monitoring external service with prometheus see my earlier [post](/blog/monitor-external-services-with-the-prometheus-operator/) about this. 
 
 ## Service
 
@@ -47,9 +47,9 @@ metadata:
   namespace: kube-system
 subsets:
 - addresses:
-  - ip: 162.44.15.221
-  - ip: 162.44.15.222
-  - ip: 162.44.15.223
+  - ip: 10.44.15.221
+  - ip: 10.44.15.222
+  - ip: 10.44.15.223
   ports:
   - name: metrics
     port: 2379

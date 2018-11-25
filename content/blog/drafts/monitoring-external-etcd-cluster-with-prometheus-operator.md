@@ -8,9 +8,9 @@ draft = true
 
 +++
 
-The recommended way to run etcd for kubernetes is to have your etcd cluster outside of the kubernetes cluster. You might be thinking create a service monitor to monitor an external service like you’ve done before. But, you’ve secured your etcd cluster so you need client certs to talk to it right? Now we need a way to provide certs to the service monitor.  Sure enough we can do all of that by creating certs as kubernetes secrets and adding a `tlsConfig` to our service monitor.
+The recommended way to run etcd for kubernetes is to have your etcd cluster outside of the kubernetes cluster. Great, good stuff. But you also run Prometheus via the Prometheus Operator to monitor everything about your cluster. So how do you get prometheus to monitor your etcd cluster if it isn't _technically_ a service in kubernetes?  You might be thinking create a service monitor to scrape an external service [like you’ve done before](/blog/monitor-external-services-with-the-prometheus-operator). But, you’ve secured your etcd cluster so you need client certs to talk to it right? Now we need a way to provide certs to the service monitor.  We can do all of that by creating certs as kubernetes secrets and adding a `tlsConfig` to our service monitor. But let me walk you through the whole process.
 
-For more some background details on monitoring external service with prometheus see my earlier [post](/blog/monitor-external-services-with-the-prometheus-operator/) about this. 
+If you'd like to just see the steps with no fluff and a repo of example files you can jump to the [tldr](#tldr)
 
 ## Service
 
@@ -120,7 +120,7 @@ We are almost done, this is the last file to modify before we can apply our chan
 
 ![](/images/prom-secrets-diff.png)
 
-The end result should be something like the following
+The end result should look something like the following
 
 ``` yaml
 apiVersion: monitoring.coreos.com/v1
@@ -160,20 +160,21 @@ spec:
 That's it. Now we just need to apply these files to our cluster.  
 
 ```shell
-Kubectl apply -f etcd-service.yaml
-Kubectl apply -f etcd-serviceMon.yaml
-Kubectl apply -f prometheus-prometheus.yaml
+kubectl apply -f etcd-service.yaml
+kubectl apply -f etcd-serviceMon.yaml
+kubectl apply -f prometheus-prometheus.yaml
 ```
 
 ## Conclusion
 
+No you can successfully pull metrics from your etcd cluster. This is important because etcd is beating heart, or brain (dependidng on the analogy you like) of kubernetes. When things go bad, it can be often because of something happening to etcd. If things "feel slow", often the root cause can be found in etcd somewhere. This is not to say etcd is bad, because it isn't. But to say that all changes you make to your cluster pass through etcd, which is very performance sensitive. In order to solve an issue you need to have awareness of the issue. Preferably because of your metrics and appropriate alerts you see it coming and is resolved _before_ you have an issue. 
+
 ## TLDR
 
-* repo with all example yaml files  
-  [github.com/jpweber/monitor-etcd-prometheus-examples](https://github.com/jpweber/monitor-etcd-prometheus-examples)
-  1. Create etcd `Service` resource
-  2. Create `Endpoint` resource for the etcd `Service`
-  3. Generate client certificate and key.
-  4. Save etcd CA, client cert and key as kubernetes secrets
-  5. Update prometheus-prometheus.yaml file
-  6. Apply your new files to cluster
+repo with all example yaml files  [github.com/jpweber/monitor-etcd-prometheus-examples](https://github.com/jpweber/monitor-etcd-prometheus-examples)
+1. Create etcd `Service` resource
+2. Create `Endpoint` resource for the etcd `Service`
+3. Generate client certificate and key.
+4. Save etcd CA, client cert and key as kubernetes secrets
+5. Update prometheus-prometheus.yaml file
+6. Apply your new files to cluster

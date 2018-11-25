@@ -1,17 +1,16 @@
 +++
-title = "Howto Monitor Etcd With Prometheus Operator"
+title = "Monitoring External Etcd Cluster With Prometheus Operator"
 description = ""
 author = ""
-date = 2018-11-09T22:52:10-05:00
-tags = ["prometheus"]
+date = 2018-11-24T21:43:55-05:00
+tags = []
 draft = true
-+++
 
-# Monitoring External Etcd Cluster with Prometheus Operator
++++
 
 The recommended way to run etcd for kubernetes is to have your etcd cluster outside of the kubernetes cluster. You might be thinking create a service monitor to monitor an external service like you’ve done before. But, you’ve secured your etcd cluster so you need client certs to talk to it right? Now we need a way to provide certs to the service monitor.  Sure enough we can do all of that by creating certs as kubernetes secrets and adding a `tlsConfig` to our service monitor.
 
-reference previous entry on services and service monitors
+For more some background details on monitoring external service with prometheus see my earlier [post](/blog/monitor-external-service-with-prometheus-operator/) about this. 
 
 ## Service
 
@@ -107,7 +106,7 @@ mv etcd-client-key.pem etcd-client.key
 
 ### Create Kubernetes  Secrets
 
-Now that a certificate and key for prometheus has been created we are going to save them, along with the etcd ca as a [kubernetes secret](https://kubernetes.io/docs/concepts/configuration/secret/)This will allow prometheus  to securely connect to etcd.
+Now that a certificate and key for prometheus has been created we are going to save them, along with the etcd ca as a [kubernetes secret](https://kubernetes.io/docs/concepts/configuration/secret/) This will allow prometheus  to securely connect to etcd.
 
 ``` shell
  kubectl -n monitoring create secret kube-etcd-client-certs --from-file=etcd-client-ca.crt=etcd-client.ca.crt --from-file=etcd-client.crt=etcd-client.crt --from-file=etcd-client.key=etcd-client.key
@@ -170,8 +169,8 @@ Kubectl apply -f prometheus-prometheus.yaml
 
 ## TLDR
 
-* repo with all example yaml files
-  Github.com/jpweber/monitor-etcd-prometheus-examples
+* repo with all example yaml files  
+  [github.com/jpweber/monitor-etcd-prometheus-examples](https://github.com/jpweber/monitor-etcd-prometheus-examples)
   1. Create etcd `Service` resource
   2. Create `Endpoint` resource for the etcd `Service`
   3. Generate client certificate and key.

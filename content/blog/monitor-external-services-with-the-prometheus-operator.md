@@ -12,6 +12,7 @@ draft = false
 Using the Prometheus Operator, the general way we define what targets should be scraped is using a  `ServiceMonitor`   This works great for services that are running in your cluster and already have a service definition. But how do you monitor something that lives outside of your cluster and does not have a Kubernetes service? We'll create service that does not use selectors, manually define endpoints for that service. Finally create a service monitor for our newly created service. 
 
 ## Creating a service for external resources
+
 The service definition for external resources is very similar to a normal service definition except we are not going to use Pod selectors. We will create the the service then define the endpoints ourselves. 
 
 ```
@@ -79,6 +80,7 @@ Events:            <none>
 
 
 ## The Service Monitor
+
 Now that we have a Kubernetes service pointing to our external gopher-builder service we need to create a service monitor so the prometheus operator can discover this target.  Make certain the port names match in the service monitor and the service definition or prometheus will not consider this a service that matches the service monitor and will not scrape it.
 Also note the namespace selector,  make sure you are searching for your service in the correct namespace.  Finally, service monitors are always to be created in the same namespace that the prometheus operator is running in.  A commonly used namespace is `monitoring` 
 
@@ -106,4 +108,3 @@ Here you can see the highlighted line shows that prometheus has found 1 service 
 ![prom-external-svc](/images/prom-external-svc.png)
 
 While this may seem like a use case that not many people need, it is useful for the times you will need it. Such as monitoring an external etcd cluster. 
-

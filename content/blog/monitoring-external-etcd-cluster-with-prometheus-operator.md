@@ -8,13 +8,13 @@ draft =false
 
 +++
 
-The recommended way to run etcd for kubernetes is to have your etcd cluster outside of the kubernetes cluster. Great, good stuff. But you also run Prometheus via the Prometheus Operator to monitor everything about your cluster. So how do you get prometheus to monitor your etcd cluster if it isn't _technically_ a service in kubernetes?  You might be thinking create a service monitor to scrape an external service [like you’ve done before](/blog/monitor-external-services-with-the-prometheus-operator). But, you’ve secured your etcd cluster so you need client certs to talk to it right? Now we need a way to provide certs to the service monitor.  We can do all of that by creating certs as kubernetes secrets and adding a `tlsConfig` to our service monitor. But let me walk you through the whole process.
+The recommended way to run etcd for kubernetes is to have your etcd cluster outside of the kubernetes cluster. Great, good stuff. But you also run Prometheus via the Prometheus Operator to monitor everything about your cluster. So how do you get prometheus to monitor your etcd cluster if it isn't _technically_ a service in kubernetes?  You might be thinking create a service monitor to scrape an external service [like you’ve done before](/blog/monitor-external-services-with-the-prometheus-operator). But, you’ve secured your etcd cluster so you need client certs to talk to it right? Now we need a way to provide certs to the service monitor.  We can do all of that by creating certs as kubernetes secrets and adding a `tlsConfig` to our service monitor. Let me walk you through the whole process.
 
 If you'd like to just see the steps with no fluff and a repo of example files you can jump to the [tldr](#tldr)
 
 ## Service
 
-First the service that will describe our etcd cluster must be created. Notice that the selector is `null` here. We are not auto-discovering any endpoints because through selectors, but instead are going to manually define them.
+First the service that will describe our etcd cluster must be created. Notice that the selector is `null` here. We are not auto-discovering any endpoints through selectors, but instead are going to manually define them.
 
 ``` yaml
 apiVersion: v1
@@ -35,7 +35,7 @@ spec:
 
 ## Endpoints
 
-Here were are going to list the endpoints for our etcd servers and then attach them to our service we created in the previous step.  Change the IP addresses to match the IPs of your etcd servers. The way these endpoints are connected to the previously created service is through the `name` property of the metadata. This _must_ match the name of the service you created.
+Here were are going to list the endpoints for our etcd servers and then attach them to our service we created in the previous step.  Change the IP addresses to match the IPs of your etcd servers. These IPs _must_ exist as SANs in your etcd server certs or else this will not work.  The way these endpoints are connected to the previously created service is through the `name` property of the metadata. This _must_ match the name of the service you created. 
 
 ``` yaml
 apiVersion: v1
@@ -58,7 +58,7 @@ subsets:
 
 ## Service Monitor
 
-In order for the prometheus operator to easily discover and start monitoring your etcd cluster, a Service Monitor needs to be created. A Service Monitor is a resource defined by the operator that describes how to  find a specified service to scrape, in this case our etcd service. It also defines things such as how often to scrape, what port to connect to and additionally in this case a configuration for how to establish TLS connections.  
+In order for the prometheus operator to easily discover and start monitoring your etcd cluster, a Service Monitor needs to be created. A Service Monitor is a resource defined by the operator that describes how to  find a specified service to scrape, our etcd service for example. It also defines things such as how often to scrape, what port to connect to and additionally in this case a configuration for how to establish TLS connections.  
 The paths for the CA, client cert and key are the paths will will mount this files to inside the container. We will be generating these files and creating Kubernetes Secrets for them in the next steps.
 
 ``` yaml
@@ -93,11 +93,33 @@ In order to speak to a secured etcd cluster we need client certificates. Using t
 
 In this example I am using [cfssl](https://github.com/cloudflare/cfssl) to generate my cert and key, but you can use another tool such as OpenSSL if you prefer.
 
+First we need a json file for cfssl to populate values in the cert. Use the following example. Save this file as `etcd-client.json`
+
+```
+{
+    "CN": "etcd client",
+    "hosts": [""],
+    "key": {
+        "algo": "rsa",
+        "size": 2048
+    },
+    "names": [
+        {
+            "C": "US",
+            "L": "CA",
+            "ST": "San Francisco"
+        }
+    ]
+}
+```
+
+The following command will generate two new files named `etcd-client.pem` and `etd-client-key.pem`
+
 ``` shell
 cfssl gencert -ca etcd/ca.crt -ca-key etcd/ca.key  etcd-client.json | cfssljson -bare etcd-client
 ```
 
-The above command will generate two new files named `etcd-client.pem` and `etd-client-key.pem`  I like to rename them for easier use and identification.
+  I like to rename them for easier use and identification.
 
 ``` shell
 mv etcd-client.pem etcd-client.crt

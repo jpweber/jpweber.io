@@ -172,9 +172,12 @@ No you can successfully pull metrics from your etcd cluster. This is important b
 ## TLDR
 
 repo with all example yaml files  [github.com/jpweber/monitor-etcd-prometheus-examples](https://github.com/jpweber/monitor-etcd-prometheus-examples)
-1. Create etcd `Service` resource
-2. Create `Endpoint` resource for the etcd `Service`
-3. Generate client certificate and key.
-4. Save etcd CA, client cert and key as kubernetes secrets
-5. Update prometheus-prometheus.yaml file
-6. Apply your new files to cluster
+
+
+
+1. Create etcd `Service` resource. 
+2. Create `Endpoint` resource for the etcd `Service`. 
+3. Generate client certificate and key.  
+4. Save etcd CA, client cert and key as kubernetes secrets. 
+5. Update prometheus-prometheus.yaml file. 
+6. Apply your new files to cluster. 

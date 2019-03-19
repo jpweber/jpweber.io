@@ -83,7 +83,7 @@ This defintes how we are going to identify certain alerts, and once we find a ma
 
 * `alertname` is the name of the alert that will be sent with the alert payload
 * `receiver`: which receiver to send this alert to
-* For `group_wait`,`` group_interval` and `repeat_interval` you don’t want to use the default values here because this alert is serving a different purpose. We don’t want to wait for them to be sent or hold back on repeats since we want it to go off at a consistent rate.
+* For `group_wait`, `group_interval` and `repeat_interval` you don’t want to use the default values here because this alert is serving a different purpose. We don’t want to wait for them to be sent or hold back on repeats since we want it to go off at a consistent rate.
 * `group_wait`: How long to initially wait to send a notification for a group
   of alerts. Allows to wait for an inhibiting alert to arrive or collect more initial alerts for the same group.
 * `group_interval`: How long to wait before sending a notification about new alerts that are added to a group of alerts for which an initial notification has already been sent
@@ -100,10 +100,12 @@ A receiver defines what to do with an alert that has been routed to it. In our c
 
 
 
-With that your prometheus instance should be sending regular interval alerts to your alert manager. The alert manager is now configured to capture these alerts and route them to your external service, which will then raise a signal if it stops recieving these alerts. See the below diagram for how this should be flowing
+With that, your prometheus instance should be sending regular interval alerts to your alert manager. The alert manager is now configured to capture these alerts and route them to your external service, which will  then signal if it stops recieving these alerts. See the below diagram for how this should be flowing
 
 ![deadmananimated](/images/deadmananimated.gif)
 
 
 
-> need to land this plane with a conclusion
+Monitoring systems are important to know this are working as you expect. But trust in your monitoring system is equally if not more important. Monitoring your monitoring system is a step in making that trust stronger. I'm sure some of you are thinking, but how do you monitor, your monitoring system monitor. Well, as they say its turtles all the way down. One could keep building this forever but at some point it needs end with something that is considered acceptable. This isn't a silver bullet, but it is something that will solve for _most_ cases. 
+
+There will be a part two to this post where I go in to `Cole`  and how one can use it  monitor the health of their alerting  system. 

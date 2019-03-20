@@ -93,10 +93,10 @@ This defines how we are going to identify certain alerts, and once we find a mat
 
 A receiver defines what to do with an alert that has been routed to it. In our case we are going to be sending the alert payload to a remote webhook. 
 
-* **name** a name for the receiver. This is the name that is referenced in the matching rules.
-* **webhook_configs** - this the notification integration that will be used to send out dead man switch alerts to an outside system. This has a a few parameters we are setting:
-  * **url** the url to the remote endpoint to send alert messages to
-  * **send_resolved**: boolean true or false, do you want to sent a resolved message or not. For the case of the dead man switch it will never resolve so we leave this set to false.
+* `name` a name for the receiver. This is the name that is referenced in the matching rules.
+* `webhook_configs` - this the notification integration that will be used to send out dead man switch alerts to an outside system. This has a a few parameters we are setting:
+  * `url` the url to the remote endpoint to send alert messages to
+  * `send_resolved`: boolean true or false, do you want to sent a resolved message or not. For the case of the dead man switch it will never resolve so we leave this set to false.
 
 
 

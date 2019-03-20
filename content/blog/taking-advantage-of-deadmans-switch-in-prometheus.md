@@ -1,5 +1,5 @@
 +++
-title = "Taking Advantage of Deadmans Switch in Prometheus"
+title = "Taking Advantage of Deadman Switch in Prometheus"
 description = "Who watches the watchers"
 author = "Jim Weber"
 date = 2019-03-19T15:50:15-04:00
@@ -75,11 +75,11 @@ webhook_configs:
 
 
 
-The important parts we need to add are the, match rule under routes, a reciever, and the webhook config for that reciever.
+The important parts we need to add are the, match rule under routes, a receiver, and the webhook config for that receiver.
 
 ### Match rules
 
-This defintes how we are going to identify certain alerts, and once we find a match where do we send it. 
+This defines how we are going to identify certain alerts, and once we find a match where do we send it. 
 
 * `alertname` is the name of the alert that will be sent with the alert payload
 * `receiver`: which receiver to send this alert to
@@ -100,7 +100,7 @@ A receiver defines what to do with an alert that has been routed to it. In our c
 
 
 
-With that, your prometheus instance should be sending regular interval alerts to your alert manager. The alert manager is now configured to capture these alerts and route them to your external service, which will  then signal if it stops recieving these alerts. See the below diagram for how this should be flowing
+With that, your prometheus instance should be sending regular interval alerts to your alert manager. The alert manager is now configured to capture these alerts and route them to your external service, which will  then signal if it stops receiving these alerts. See the below diagram for how this should be flowing
 
 ![deadmananimated](/images/deadmananimated.gif)
 

@@ -4,7 +4,7 @@ description = "Who watches the watchers"
 author = "Jim Weber"
 date = 2019-03-19T15:50:15-04:00
 tags = ["kubernetes", "prometheus"]
-draft = true
+draft = false
 
 +++
 

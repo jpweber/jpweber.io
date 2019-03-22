@@ -1,5 +1,5 @@
 +++
-title = "Taking Advantage of Deadman Switch in Prometheus"
+title = "Taking Advantage of Deadman's Switch in Prometheus"
 description = "Who watches the watchers"
 author = "Jim Weber"
 date = 2019-03-19T15:50:15-04:00
@@ -16,19 +16,19 @@ Working with Kubernetes, and specifically prometheus, this question comes up fro
 
 > “How do I know my monitoring system is working”. 
 
-This is a question anyone who implements a monitoring system should ask. Fortunately, there is a basic concept that can solve this problem. A [Dead man’s switch](https://en.wikipedia.org/wiki/Dead_man%27s_switch)
+This is a question anyone who implements a monitoring system should ask. Fortunately, there is a basic concept that can solve this problem. A [Deadman's switch](https://en.wikipedia.org/wiki/Dead_man%27s_switch)
 
-A dead man’s switch, in the physical world, is fairly easy to understand. There is some system, that requires human interaction to function. If human interaction does not occur, the system ceases to function. For example, one that many people are probably familiar with is on a lawn mower. On many gas or electric lawn mowers, there is a lever or bar you must hold down for the engine to run. If you let go of the handle, including the bar you are holding down, the engine stops running. This is to prevent a runaway lawn mower causing damage or harm. Another example, which first introduced me to the concept is on trains. A train conductor on modern trains may be standing or sitting for a significant amount of time without needing to interact with the train. But, because we don’t want people literally sleeping on the job, trains will have a “dead man’s switch” to ensure the conductor is awake and alert. This can take many forms but a common one is simply a light and a button. On a control panel a light turns on, the conductor must push the button, and the train keeps on going. If the conductor does *not* push the button the train will stop, assuming the conductor is incapacitated and cannot operate the train as needed.
+A Deadman’s switch, in the physical world, is fairly easy to understand. There is some system, that requires human interaction to function. If human interaction does not occur, the system ceases to function. For example, one that many people are probably familiar with is on a lawn mower. On many gas or electric lawn mowers, there is a lever or bar you must hold down for the engine to run. If you let go of the handle, including the bar you are holding down, the engine stops running. This is to prevent a runaway lawn mower causing damage or harm. Another example, which first introduced me to the concept is on trains. A train conductor on modern trains may be standing or sitting for a significant amount of time without needing to interact with the train. But, because we don’t want people literally sleeping on the job, trains will have a Deadman’s switch to ensure the conductor is awake and alert. This can take many forms but a common one is simply a light and a button. On a control panel a light turns on, the conductor must push the button, and the train keeps on going. If the conductor does *not* push the button the train will stop, assuming the conductor is incapacitated and cannot operate the train as needed.
 
-In software this can work much in the same way, but in the case of systems monitoring, we don’t need to bring a human into the equation. Imagine for example, if you had an alerting system that sent out alerts at a regular interval, a heartbeat if you will. You also had some other system, outside of your primary system, that was listening for those alerts. Now imagine your outside system stopped receiving those alerts or heartbeats. It could then tell someone that it stopped receiving messages. This is the essence of the dead man’s switch with prometheus, and how one can monitor one’s monitoring system.
+In software this can work much in the same way, but in the case of systems monitoring, we don’t need to bring a human into the equation. Imagine for example, if you had an alerting system that sent out alerts at a regular interval, a heartbeat if you will. You also had some other system, outside of your primary system, that was listening for those alerts. Now imagine your outside system stopped receiving those alerts or heartbeats. It could then tell someone that it stopped receiving messages. This is the essence of the Deadman’s switch with prometheus, and how one can monitor one’s monitoring system.
 
-## Prometheus DeadMan Switch Alert Rule
-Within prometheus it is trivial to create an expression that we can build a DeadMan switch from.
+## Prometheus DeadMan's Switch Alert Rule
+Within prometheus it is trivial to create an expression that we can build a DeadMan's switch from.
 ```
 expr: vector(1)
 ```
 
-That expression will always return true. Here is an alert that leverages the previous expression to create a dead man switch alert.
+That expression will always return true. Here is an alert that leverages the previous expression to create a Deadman's switch alert.
 
 ```
      - alert: DeadMansSwitch
@@ -43,10 +43,10 @@ That expression will always return true. Here is an alert that leverages the pre
 
 This will send an alert off to your alertmanager with that description, summary and severity. Change as you see fit. 
 
-Ok, great. You have something that will send alerts all the time but now what? _rework this section to reflect something is missing_ There are few good options, but usually the answer is “oh just make something that listens for those and then sends you alerts” very hand-wavy, and easy to say, but leaves out a lot of details. I created a usable [implementation](https://github.com/jpweber/cole) of said hand waviness to show how this works. Use whatever you like, and what works best for you. The rest of what I cover here *does not* assume you are using the tool I wrote because the concepts should apply universally.
+Ok, great. You have something that will send alerts all the time but now what? In order for this to be effective, something has to be recieving those alerts that can take action if an alert is _not_ recieved.  I created a usable implementation of a service that listens for alerts to  show how this works that can be found [here](https://github.com/jpweber/cole). Use whatever you like, and what works best for you. The rest of what I cover here *does not* assume you are using the tool I wrote because the concepts should apply universally.
 
 ## Alert Manager Config
-You’ve got your Dead man switch alert. Next, we need to setup alertmanager to know how to deal with these dead man switch alerts.
+You’ve got your Deadman's switch alert. Next, we need to setup alertmanager to know how to deal with these alerts.
 
 The below example has the global config and other routes cut out, but I left the section headings in so you can see how this fits in the structure of an alertmanager config file.
 
@@ -91,11 +91,11 @@ A receiver defines what to do with an alert that has been routed to it. In our c
 
 - name a name for the receiver. This is the name that is referenced in the matching rules.
 
-- `webhook_configs` - this the notification integration that will be used to send out dead man switch alerts to an outside system. This has a few parameters we are setting:
+- `webhook_configs` - this the notification integration that will be used to send out Deadman's switch alerts to an outside system. This has a few parameters we are setting:
 
 - - url the URL to the remote endpoint to send alert messages to
 
-* `send_resolved`: boolean true or false that controls whether you want to send a resolved message or not. For the case of the dead man switch it will never resolve so we leave this set to false.
+* `send_resolved`: boolean true or false that controls whether you want to send a resolved message or not. For the case of the Deadman's switch it will never resolve so we leave this set to false.
 
 
 

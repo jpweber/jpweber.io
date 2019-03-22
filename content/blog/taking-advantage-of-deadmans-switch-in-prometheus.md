@@ -4,16 +4,16 @@ description = "Who watches the watchers"
 author = "Jim Weber"
 date = 2019-03-19T15:50:15-04:00
 tags = ["kubernetes", "prometheus"]
-draft = false
+draft = true
 
 +++
 
 # 
 
-How do you know your monitoring system is working? leverage a Deadman switch alert with an external service that listens for Deadman Switch alerts and the absence of those alerts.
+How do you know your monitoring system is working? Leverage a Deadman switch alert with an external service that listens for Deadman Switch alerts and the absence of those alerts.
 
 ## Purpose and background
-When creating systems, monitoring to know the health of your systems is important. Be it a car with it's basic engine light, a server that checks that a process is running, or a complicated distributed system that ensures things are happening within acceptable latencies. Some form of monitoring is how you know your system is working as expected. These can range from seemingly simple, to very complex. The thing that they all have in common is that we rely on them to ensure our systems are working as expected. But then who or what monitors the monitoring system? How do you know the system you rely on to know the health of a system is - healthy?
+When creating systems, monitoring to know the health of your systems is important. Be it a car, with its basic engine light, a server that checks that a process is running, or a complicated distributed system that ensures things are happening within acceptable latencies. Some form of monitoring is how you know your system is working as expected. These can range from seemingly simple, to very complex. The thing that they all have in common is that we rely on them to ensure our systems are working as expected. But then who or what monitors the monitoring system? How do you know the system you rely on to know the health of a system is - healthy?
 
 Working with Kubernetes and specifically prometheus, this question comes up from time to time. 
 
@@ -106,6 +106,4 @@ With that, your prometheus instance should be sending regular interval alerts to
 
 
 
-Monitoring systems are important to know this are working as you expect. But trust in your monitoring system is equally if not more important. Monitoring your monitoring system is a step in making that trust stronger. I'm sure some of you are thinking, but how do you monitor, your monitoring system monitor. Well, as they say its turtles all the way down. One could keep building this forever but at some point it needs end with something that is considered acceptable. This isn't a silver bullet, but it is something that will solve for _most_ cases. 
-
-There will be a part two to this post where I go in to `Cole`  and how one can use it  monitor the health of their alerting  system. 
+Monitoring systems are important to know things are working as you expect. But trust in your monitoring system is equally if not more important. Monitoring your monitoring system is a step in making that trust stronger. I'm sure some of you are thinking, but how do you monitor, your monitoring system monitor. Well, as they say its turtles all the way down. One could keep building this forever but at some point it needs end with something that is considered acceptable. This isn't a silver bullet, but it is something that will solve for _most_ cases. 

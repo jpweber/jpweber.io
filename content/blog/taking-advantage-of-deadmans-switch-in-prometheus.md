@@ -12,7 +12,6 @@ draft = true
 
 How do you know your monitoring system is working? Leverage a Deadman switch alert with an external service that listens for Deadman Switch alerts and the absence of those alerts.
 
-## Purpose and background
 When creating systems, monitoring to know the health of your systems is important. Be it a car, with its basic engine light, a server that checks that a process is running, or a complicated distributed system that ensures things are happening within acceptable latencies. Some form of monitoring is how you know your system is working as expected. These can range from seemingly simple, to very complex. The thing that they all have in common is that we rely on them to ensure our systems are working as expected. But then who or what monitors the monitoring system? How do you know the system you rely on to know the health of a system is - healthy?
 
 Working with Kubernetes and specifically prometheus, this question comes up from time to time. 

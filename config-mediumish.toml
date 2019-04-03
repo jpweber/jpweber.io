@@ -1,4 +1,4 @@
-baseURL = "http://jpweber.io/"
+baseURL = "https://jpweber.io/"
 languageCode = "en-us"
 title = "jpweber blog"
 theme = "mediumish-gohugo-theme"

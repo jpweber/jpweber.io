@@ -4,15 +4,16 @@ description = "Exploring TokenRequest API, TokenReview API and Service account v
 author = "Jim Weber"
 date = 2019-04-03T15:28:27-04:00
 tags = ["kubernetes"]
-draft = true
+draft = false
+asciinema = true
 
 +++
 
-The TokenRequest API enables the creation of tokens that aren’t persisted in the Secrets API, that are targeted for specific audiences (such as external secret stores), have configurable expiries, and are bindable to specific pods. These tokens are bound to _specific_ containers. Because of these they can be used as a means of container identity. The current service account tokens are shared among all Replicas of a deployment and thusly are not a good means of unique identity.
+The TokenRequest API enables the creation of tokens that aren’t persisted in the Secrets API, that are targeted for specific audiences (such as external secret stores), have configurable expiries, and are bindable to specific pods. These tokens are bound to _specific_ containers. Because of this they can be used as a means of container identity. The current service account tokens are shared among all replicas of a deployment and thusly, are not a good means of unique identity.
 
-This feature was introduced in kubernetes 1.10 as an alpha feature and graduated to beta status in 1.12, which is current status as in kubernetes 1.14.
+This feature was introduced in kubernetes 1.10 as an alpha feature and graduated to beta status in 1.12, which is the current status in kubernetes 1.14.
 
-I am going to look at how to use this feature coupled along with the TokenReview API and [Service Account Volume Projections](https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/#service-account-token-volume-projection). How you can test these features with cURL and finally how this would all work together with two example services, one that will get a bound service account token and one that will validate this token.
+I am going to look at how to use the TokenRequest API coupled along with the TokenReview API, [Service Account Volume Projections](https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/#service-account-token-volume-projection) and how you can test these features with cURL.  Finally I'll demonstrate how this would all work together with two example services. One that will get a bound service account token and one that will validate this token.
 
 ## How to enable these features
 
@@ -25,7 +26,20 @@ In order to use the `TokenRequest` API and service account token volume projecti
 - --service-account-api-audiences=api,vault,factors
 ```
 
-If you are using kubeadm these would be added as apiServerExtraArgs ***get the right words here*** in your kubeadm config file.
+If you are using kubeadm these would be added as apiServer extraArgs in your `kubeadm.conf` file. See example below
+
+```yaml
+apiVersion: kubeadm.k8s.io/v1beta1
+kind: ClusterConfiguration
+apiServer:
+  extraArgs:
+    service-account-signing-key-file: /etc/kubernetes/pki/sa.key
+    service-account-key-file: /etc/kubernetes/pki/sa.pub
+    service-account-issuer: api
+    service-account-api-audiences: api,vault,factors
+```
+
+
 
 Before adding those to your manifest file lets go over what they are.
 
@@ -33,19 +47,19 @@ Before adding those to your manifest file lets go over what they are.
   Path to the file that contains the current private key of the service account token issuer. The issuer will sign issued ID tokens with this private key.
 
 * **service-account-key-file:**
-  File containing PEM-encoded x509 RSA or ECDSA private or public keys, used to verify ServiceAccount tokens. The specified file can contain multiple keys, and the flag can be specified multiple times with different files. If unspecified, --tls-private-key-file is used. Must be specified when --service-account-signing-key is provided
+  File containing PEM-encoded x509 RSA or ECDSA private or public keys, used to verify ServiceAccount tokens. The specified file can contain multiple keys, and the flag can be specified multiple times with different files. If unspecified, ``--tls-private-key-file` is used. Must be specified when ``--service-account-signing-key` is provided
 
 * **service-account-issuer:**
   Identifier of the service account token issuer. The issuer will assert this identifier in `iss` claim of issued tokens. This value is a string or URI.
 
 * **service-account-api-audiences:**
-  Identifiers of the API. The service account token authenticator will validate that tokens used against the API are bound to at least one of these audiences. If the --service-account-issuer flag is configured and this flag is not, this field defaults to a single element list containing the issuer URL.
+  Identifiers of the API. The service account token authenticator will validate that tokens used against the API are bound to at least one of these audiences. If the `--service-account-issuer` flag is configured and this flag is not, this field defaults to a single element list containing the issuer URL.
 
 ## Testing the API Endpoints with cURL
 
 ### Get a user bearer token
 
-To successfully make http requests to the Kubernetes API a bearer token must be included as an Authorization header. Below is an example command one could run to get the bearer token for a user named `admin-user` in the namespace of `kube-system`. This same command could apply to any other user or namespace. Provided that he chosen user has access to the endpoints you are trying to reach.
+To successfully make http requests to the Kubernetes API a bearer token must be included as an authorization header. Below is an example command one could run to get the bearer token for a user named `admin-user` in the namespace of `kube-system`. This same command could apply to any other user or namespace. Provided that, the chosen user has access to the endpoints you are trying to reach.
 
 ```shell
 kubectl -n kube-system describe secret $(kubectl -n kube-system get secret | grep admin-user | awk '{print $1}')
@@ -58,6 +72,8 @@ Curl template:
 ```bash
 curl -X "POST" "https://{kubernetes API IP}:{kubernetes API Port}/api/v1/namespaces/{namespace}/serviceaccounts/{name}/token" \
      -H 'Authorization: Bearer {your bearer token}' \
+     -H 'Content-Type: application/json; charset=utf-8' \
+     -d $'{}'
 ```
 
 Example populated from my test cluster:
@@ -95,6 +111,10 @@ curl -k -X "POST" "https://192.168.2.173:6443/api/v1/namespaces/token-demo/servi
 }
 ```
 
+Of the data included in this response there are a few things I want to point. In the `spec` section one can see that it includes the list of audiences this token is valid for as well as the lifetime of this token. If one were to try to use this token after 3600 seconds, or one hour, it would not be considered valid. 
+
+Arguably the most imporant part of the response it self which is included in the `status` section. 
+
 ### TokenReview Request
 
 Curl Template:
@@ -128,7 +148,7 @@ curl -X "POST" "https://192.168.2.173:6443/apis/authentication.k8s.io/v1/tokenre
 
 ```
 
-As you can see above we are sending a `POST` request to the `TokenReview` endpoint with a json body that includes the token we want to validate. As with all kubernetes api requests we include a bearer token. This token was issued to our `token-server` pod and corresponds to the service account with the `ClusterRoleBinding` to allow `TokenReview` requests.
+As you can see above we are sending a `POST` request to the TokenReview endpoint with a json body that includes the token we want to validate. As with all kubernetes api requests we include a bearer token in an authorization header. This token was issued to our `token-server` pod and corresponds to the service account with the `ClusterRoleBinding` to allow `TokenReview` requests.
 
 The repsonse back would look like the following.
 
@@ -170,21 +190,15 @@ The repsonse back would look like the following.
 }
 ```
 
-In the example `token-server` application I am checking for `"authenticated": true` and that what I've define my audience to be, in this case `factors`,  is in the list of audiences
+That `status` portion of this response contains most of the data that will be useful for validating a token. The `authenticated` key is a simple boolean informing the requestor that this an authenticated token. The audiences portion also lists the audiences this token is intended for. It is up to developer to ensure they are the intended audience for this token. 
 
-``` json
-"audiences": [
-    "factors"
-]
-```
+##  Example deployment
 
-## How to use in an example deployment
+To demonstrate how this all comes together I will create two services that need to communicate. One, I'll call `token-client` and the other I'll call `token-server`, that returns factors of a provided number. A web client will send a request to `token-client` which will then make a service to service call to the `token-server` with its bound service account token as an auth header. The `token-server` will then validate the provided auth token against the TokenReview API and then respond with data or a 403 forbidden if the token is not valid.
 
-To demonstrate how this all comes together I will create two services that need to communicate. One, I'll call `token-client` and the other I'll call `token-server`, that returns that factors of a provided number. A web client will send a request to `token-client` which will then make a service to service call to the `token-server` with its bound service account token as an auth header. The `token-server` will then validate the provided auth token against the `TokenReview` api and then respond with data or a 403 forbidden if the token is not validated and issued for that audience.
+The diagram below shows the flow of of the demo applications
 
-The diagram below shows the flow of th
-
-![deadman switch@2x-2](/Users/jamesweber/Downloads/deadman switch@2x-2.png)
+![TokenRequest Demo Flow](/images/tokenrequest@2x.png)
 
 1. Container makes request for a bound service account token via TokenRequest API. *In the demo I am using volume projection to handle the fetching of the token on my behalf which is not pictured*
 2. API returns a token
@@ -193,9 +207,9 @@ The diagram below shows the flow of th
 5. API responds with validation data about the request token.
 6. If token is valid `token-server` responds to `token-client` with request payload.
 
-Full manifests and example code can be found at [https://github.com/jpweber/tokenrequest-demo](https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/#service-account-token-volume-projection)
+Full manifests and example code can be found at [https://github.com/jpweber/tokenrequest-demo](https://github.com/jpweber/tokenrequest-demo)
 
-For the `token-client` service there are two things that will be unique from a normal deployment. It needs to have a service account, this cannot work with the `default` service account. Token volume project also needs to be configured.
+For the `token-client` service there are two things that will be unique from a normal deployment. It needs to have a service account, this cannot work with the `default` service account. Token volume projection also needs to be configured.
 
 ### Token-Client Service Account
 
@@ -209,7 +223,7 @@ metadata:
   namespace: token-demo
 ```
 
-As you can see there isn't anything special about this service account. We just need to create it and node the name. Next is the PodSpec and volume defintions
+As you can see there isn't anything special about this service account. We just need to create it and remember the name. Next is the PodSpec and volume defintions
 
 ### Token-Client PodSpec
 
@@ -244,7 +258,7 @@ As you can see there isn't anything special about this service account. We just 
 
 The first line of the spec we are telling our containers to use the service account we created. About midway down is where the `volumeMounts` are specified. Here you specify the file path, and the name of the volume to be mounted at this path. One can mount these anywhere you prefer, I like to use `/var/run/secrets` because that is where kubernetes puts secrets by default. The last section at the bottom is `volumes` , which is where the projected volume is specified. If you have not used volumes in a pod before it is important to point out that the `name` field under volumes will be the name that is to be used under `volumeMounts`.
 
-Now if you deploy a manifest that contains a similar PodSpec you can confirm that the `TokenRequest` and service acount volume project are working by checking the token file.
+If you deployed a using [my example](https://github.com/jpweber/tokenrequest-demo/blob/master/client/deploy.yaml) you can confirm that the TokenRequest and service acount volume projection are working by checking the token file. This command will work for other deployments you will just need to modify the namespace, pod name and path to the token where appropriate.
 
 ```shell
 kubectl -n token-demo exec -ti <pod name> cat /var/run/secrets/tokens/factor-token
@@ -258,11 +272,11 @@ eyJhbGciOiJSUzI1NiIsImtpZCI6IiJ9.eyJhdWQiOlsiZmFjdG9ycyJdLCJleHAiOjE1NTM3MTc0NjY
 J8t17gc6c9e9eIaU2NtwydSQoosDJkugkQDVV2SQDhVUdZU20mAKJkpBg9vo6LBmR4Q-c6mIseT7LyGhDTDpZhGqMYgkQ
 ```
 
-You can further validate that this token is what you expect by putting decoding it with [https://jwt.io](https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/#service-account-token-volume-projection).
+You can further validate that this token is what you expect by putting decoding it with [https://jwt.io](https://jwt.io).
 
-That covers the *client* application that will be requesting a bound service account token. Next we need to see how we can validate that token from the *server* side.
+That covers requesting a bound service account token in *client* application. Next we need to see how we can validate that token from the *server* side.
 
-The `token-server` needs a service account just like the `token-client` but this time we also need to create a `ClusterRoleBinding` to allow it to talk with the `TokenReview` API.
+The `token-server` needs a service account just like the `token-client` but we also need to create a `RoleBinding` to allow it to talk with the `TokenReview` API.
 
 ### Token-Server Service Account and Cluster RoleBinding
 
@@ -288,7 +302,15 @@ subjects:
   namespace: token-demo
 ```
 
-Other than that the deployment manifest is totally standard. The example application then handles the token validation portion.
+Other than that the deployment manifest is totally standard. The example application then handles the token validation portion. 
+
+Have a look at the demo in action with a request that fails auth and then one that succeeds. 
+
+{{< asciinema key="238721"  preload="1"  loop="true">}}
+
+When I first started exploring what TokenRequest API was all about I couldn't find something that tied all this information together and found myself going through kubernetes PRs and reading through the feature proposals to figure out how it all worked. I hope this has proved helpful in demonstrating that I think is a pretty powerful set of features in Kubernetes. 
+
+
 
 ## Reference Links
 
@@ -296,13 +318,13 @@ Other than that the deployment manifest is totally standard. The example applica
     [https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/#service-account-token-volume-projection](https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/#service-account-token-volume-projection)
 
 * service account volume projection proposal
-    [https://github.com/mikedanese/community/blob/2bf41bd80a9a50b544731c74c7d956c041ec71eb/contributors/design-proposals/storage/svcacct-token-volume-source.md](https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/#service-account-token-volume-projection)
+    [https://github.com/mikedanese/community/blob/2bf41bd80a9a50b544731c74c7d956c041ec71eb/contributors/design-proposals/storage/svcacct-token-volume-source.md](https://github.com/mikedanese/community/blob/2bf41bd80a9a50b544731c74c7d956c041ec71eb/contributors/design-proposals/storage/svcacct-token-volume-source.md)
 
-* tokenrview api docs
+* TokenReview api docs. 
     [v1.TokenReview - /apis/authentication.k8s.io/v1 | REST API Reference | OKD Latest](https://docs.okd.io/latest/rest_api/apis-authentication.k8s.io/v1.TokenReview.html)
 
-* tokenrequest proposal
+* TokenRequest proposal. 
     [community/bound-service-account-tokens.md at master · kubernetes/community · GitHub](https://github.com/kubernetes/community/blob/master/contributors/design-proposals/auth/bound-service-account-tokens.md)
 
-* github repo with example manifests and code
+* github repo with example manifests and code. 
     [https://github.com/jpweber/tokenrequest-demo](https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/#service-account-token-volume-projection)

@@ -17,7 +17,7 @@ I am going to look at how to use the TokenRequest API coupled along with the Tok
 
 ## How to enable these features
 
-In order to use the `TokenRequest` API and service account token volume projection a few flags need to be added to your `kube-apiserver` manifest, seen below.
+In order to use the TokenRequest API and service account token volume projection a few flags need to be added to your `kube-apiserver` manifest, seen below. If you are adding this to an existing cluster, in most installations this file will be found at /etc/kubernetes/manifests/kube-apiserver.yaml
 
 ``` yaml
 - --service-account-signing-key-file=/etc/kubernetes/pki/sa.key
@@ -39,8 +39,6 @@ apiServer:
     service-account-api-audiences: api,vault,factors
 ```
 
-
-
 Before adding those to your manifest file lets go over what they are.
 
 * **service-account-signing-key-file:**
@@ -59,7 +57,7 @@ Before adding those to your manifest file lets go over what they are.
 
 ### Get a user bearer token
 
-To successfully make http requests to the Kubernetes API a bearer token must be included as an authorization header. Below is an example command one could run to get the bearer token for a user named `admin-user` in the namespace of `kube-system`. This same command could apply to any other user or namespace. Provided that, the chosen user has access to the endpoints you are trying to reach.
+To successfully make http requests to the Kubernetes API a bearer token must be included as an authorization header. Below is an example command one could run to get the bearer token for a user named `admin-user` in the namespace of `kube-system`. This same command could apply to any other user or namespace. 
 
 ```shell
 kubectl -n kube-system describe secret $(kubectl -n kube-system get secret | grep admin-user | awk '{print $1}')
@@ -111,9 +109,9 @@ curl -k -X "POST" "https://192.168.2.173:6443/api/v1/namespaces/token-demo/servi
 }
 ```
 
-Of the data included in this response there are a few things I want to point. In the `spec` section one can see that it includes the list of audiences this token is valid for as well as the lifetime of this token. If one were to try to use this token after 3600 seconds, or one hour, it would not be considered valid. 
+Of the data included in this response there are a few things I want to point out. In the `spec` section one can see that it includes the list of audiences this token is valid for, as well as the lifetime of this token. If one were to try to use this token after 3600 seconds, or one hour, it would not be considered valid. 
 
-Arguably the most imporant part of the response it self which is included in the `status` section. 
+The other important item in this response is the token we requested. It is found in the `status` section. 
 
 ### TokenReview Request
 
@@ -190,7 +188,7 @@ The repsonse back would look like the following.
 }
 ```
 
-That `status` portion of this response contains most of the data that will be useful for validating a token. The `authenticated` key is a simple boolean informing the requestor that this an authenticated token. The audiences portion also lists the audiences this token is intended for. It is up to developer to ensure they are the intended audience for this token. 
+The `status` portion of this response contains most of the data that will be useful for validating a token. The `authenticated` key is a simple boolean informing the requestor that this an authenticated token. The audiences portion also lists the audiences this token is intended for. It is up to developer to ensure they are the intended audience for this token. 
 
 ##  Example deployment
 

@@ -148,7 +148,7 @@ curl -X "POST" "https://192.168.2.173:6443/apis/authentication.k8s.io/v1/tokenre
 
 As you can see above we are sending a `POST` request to the TokenReview endpoint with a JSON body that includes the token we want to validate. As with all kubernetes API requests we include a bearer token in an authorization header. This token was issued to our `token-server` pod and corresponds to the service account with the `ClusterRoleBinding` to allow `TokenReview` requests.
 
-The respsonse back would look like the following.
+The response back would look like the following.
 
 ### TokenReview Response
 
@@ -262,7 +262,7 @@ If you deployed using [my example](https://github.com/jpweber/tokenrequest-demo/
 kubectl -n token-demo exec -ti <pod name> cat /var/run/secrets/tokens/factor-token
 ```
 
-Which should provide ouput similar to the following.
+Which should provide output similar to the following.
 
 ``` shell
 eyJhbGciOiJSUzI1NiIsImtpZCI6IiJ9.eyJhdWQiOlsiZmFjdG9ycyJdLCJleHAiOjE1NTM3MTc0NjYsImlhdCI6MTU1MzcxNjg2NiwiaXNzIjoiYXBpIiwia3ViZXJuZXRlcy5pbyI6eyJuYW1lc3BhY2UiOiJ0b2tlbi1kZW1vIiwicG9kIjp7Im5hbWUiO

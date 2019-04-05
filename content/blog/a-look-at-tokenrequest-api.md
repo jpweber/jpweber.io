@@ -17,7 +17,7 @@ I am going to look at how to use the TokenRequest API coupled along with the Tok
 
 ## How to enable these features
 
-In order to use the TokenRequest API and service account token volume projection a few flags need to be added to your `kube-apiserver` manifest, seen below. If you are adding this to an existing cluster, in most installations this file will be found at /etc/kubernetes/manifests/kube-apiserver.yaml
+In order to use the TokenRequest API and service account token volume projection a few flags need to be added to your `kube-apiserver` manifest, seen below. If you are adding this to an existing cluster, in most installations this file will be found at `/etc/kubernetes/manifests/kube-apiserver.yaml`
 
 ``` yaml
 - --service-account-signing-key-file=/etc/kubernetes/pki/sa.key
@@ -325,4 +325,4 @@ When I first started exploring what TokenRequest API was all about I couldn't fi
     [community/bound-service-account-tokens.md at master · kubernetes/community · GitHub](https://github.com/kubernetes/community/blob/master/contributors/design-proposals/auth/bound-service-account-tokens.md)
 
 * github repo with example manifests and code. 
-    [https://github.com/jpweber/tokenrequest-demo](https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/#service-account-token-volume-projection)
+    [https://github.com/jpweber/tokenrequest-demo](https://github.com/jpweber/tokenrequest-demo)

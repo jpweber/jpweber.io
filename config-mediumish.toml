@@ -1,4 +1,4 @@
-baseURL = "http://jpweber.io/"
+baseURL = "https://jpweber.io/"
 languageCode = "en-us"
 title = "jpweber blog"
 theme = "mediumish-gohugo-theme"
@@ -7,7 +7,7 @@ copyright = "Jim Weber - All rights reserved"
 enableEmoji = true
 publishDir = "public"
 #disqusShortname = "your-shortname-here"
-#googleAnalytics = "UA-1XXXXXXX1-1"
+googleAnalytics = "UA-4723408-4"
 
 
 [params]
